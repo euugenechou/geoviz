@@ -1,6 +1,7 @@
-# Genevieve
+# Geoviz: Geo-genetic visualizer for UShER
 
-Hm.
+See [UShER
+documentation](https://usher-wiki.readthedocs.io/en/latest/index.html).
 
 ### Requirements
 
