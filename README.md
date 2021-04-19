@@ -11,13 +11,19 @@ choice.
 - `boost`
 - `tbb`
 
-### Notes
-- `std::random_shuffle` removed in C++17
-- Fix: swapped with std::shuffle() from `<random>`
-- A timer is defined in main but used throughout the library
-
 ### Build
     $ make
 
 ### Clean
     $ make clean
+
+### Notes
+- `std::random_shuffle` removed in C++17
+    - Fix: swapped with std::shuffle() from `<random>`
+- A timer is defined in main but used throughout the library
+
+### TODO
+- [ ] Maybe refactor extract main()
+- [ ] Set up quadtrees or set up sorted coordinate files
+- [ ] Python Google maps vs. straight Javascript
+- [ ] Portability and distribution
