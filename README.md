@@ -10,6 +10,7 @@ choice.
 - `protobuf`
 - `boost`
 - `tbb`
+- `gperftools`
 
 ### Build
     $ make
@@ -25,5 +26,5 @@ choice.
 ### TODO
 - [ ] Maybe refactor extract main()
 - [ ] Set up quadtrees or set up sorted coordinate files
-- [ ] Python Google maps vs. straight Javascript
+- [x] Python Google maps vs. straight Javascript
 - [ ] Portability and distribution
