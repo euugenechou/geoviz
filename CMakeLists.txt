@@ -6,8 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib -ltbb")
 set(CMAKE_CXX_FLAGS "-std=c++17 -Ofast -Wall -Werror -Wshadow -Wpedantic")
+
+if(EXISTS "/usr/local/lib")
+  set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib -ltbb")
+elseif(EXISTS "/opt/homebrew/Cellar/tbb/2020_U3_1/lib")
+  set(CMAKE_EXE_LINKER_FLAGS "-L/opt/homebrew/Cellar/tbb/2020_U3_1/lib -ltbb")
+endif()
 
 find_package(Boost COMPONENTS program_options iostreams filesystem REQUIRED)
 find_package(Protobuf REQUIRED)
