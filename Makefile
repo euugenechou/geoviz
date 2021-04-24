@@ -1,6 +1,9 @@
-all: default
+all: run
 
-default:
+run: compile
+	build/geoviz
+
+compile:
 	@mkdir -p build && cd build && cmake .. && make -j4
 
 clean:

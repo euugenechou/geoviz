@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Geoviz</title>
+    <style type="text/css">
+#map {
+  height: 95vh;
+  width: 50%;
+  float: right;
+  justify-content: center;
+}
+    </style>
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      initMap = function() {
+        const origin = { lat: 36.9881, lng: -122.0582 };
+
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 8,
+          center: origin,
+        });
+
+        map.addListener("bounds_changed", () => {
+          var data = map.getBounds().toJSON();
+          $.ajax({
+            url: '/data',
+            dataType: 'json',
+            type: 'post',
+            contentType: 'application/json',
+            data: JSON.stringify(data)
+          }).then(function() { console.log(data); })
+        });
+      };
+    </script>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly"
+      async
+      ></script>
+  </body>
+</html>
