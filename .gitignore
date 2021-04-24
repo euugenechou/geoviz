@@ -33,3 +33,7 @@
 
 # Build files
 build/*
+
+# Test files
+latlngs/*
+protobufs/*
