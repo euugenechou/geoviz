@@ -25,6 +25,6 @@ choice.
 
 ### TODO
 - [ ] Maybe refactor extract main()
-- [ ] Set up quadtrees or set up sorted coordinate files
+- [ ] Set up quadtrees ~~or set up sorted coordinate files~~
 - [x] Python Google maps vs. straight Javascript
 - [ ] Portability and distribution
