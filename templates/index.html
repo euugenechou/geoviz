@@ -5,7 +5,7 @@
     <style type="text/css">
 #map {
   height: 95vh;
-  width: 50%;
+  width: 75%;
   float: right;
   justify-content: center;
 }
@@ -21,15 +21,45 @@
           center: origin,
         });
 
+        var markers = {};
+
         map.addListener("bounds_changed", () => {
           var data = map.getBounds().toJSON();
+          console.log(data);
           $.ajax({
             url: '/data',
             dataType: 'json',
             type: 'post',
+            async: false,
             contentType: 'application/json',
-            data: JSON.stringify(data)
-          }).then(function() { console.log(data); })
+            data: JSON.stringify(data),
+            success: function(res) {
+              // Make new markers if they aren't already present.
+              for (var sample in res) {
+                var lat = res[sample]["lat"];
+                var lng = res[sample]["lng"];
+                var latlng = new google.maps.LatLng({lat: lat, lng: lng});
+
+                if (!(sample in markers)) {
+                  var marker = new google.maps.Marker({
+                    position: latlng,
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+                  });
+                  markers[sample] = marker;
+                }
+              }
+
+              // Delete any markers that aren't visible anymore.
+              for (var sample in markers) {
+                var marker = markers[sample];
+                if (!(map.getBounds().contains(marker.getPosition()))) {
+                  marker.setMap(null);
+                  delete markers[sample];
+                }
+              }
+            }
+          })
         });
       };
     </script>

@@ -41,8 +41,8 @@ static void load_samples(Sample samples[], std::ifstream &llfile) {
         boost::split(fields, line, boost::is_any_of(" "));
         Sample s = {
             .name = fields[0],
-            .lat = std::stod(fields[1]),
-            .lng = std::stod(fields[2]),
+            .lat  = std::stod(fields[1]),
+            .lng  = std::stod(fields[2]),
         };
         samples[i] = s;
     }
@@ -51,8 +51,8 @@ static void load_samples(Sample samples[], std::ifstream &llfile) {
 static bool inbounds(const crow::json::rvalue &bounds, double lat, double lng) {
     double north = bounds["north"].d();
     double south = bounds["south"].d();
-    double east = bounds["east"].d();
-    double west = bounds["west"].d();
+    double east  = bounds["east"].d();
+    double west  = bounds["west"].d();
     return south < lat && lat < north && west < lng && lng < east;
 }
 
@@ -113,14 +113,18 @@ int main(int argc, char **argv) {
 
     // Route for Google Maps API to send bounds to.
     CROW_ROUTE(app, "/data").methods("POST"_method)([&](const crow::request &req) {
-        auto bounds = crow::json::load(req.body);
+        crow::json::rvalue bounds = crow::json::load(req.body);
         CROW_LOG_INFO << bounds;
+
+        crow::json::wvalue matches;
         for (auto &x : samples) {
             if (inbounds(bounds, x.lat, x.lng)) {
-                CROW_LOG_INFO << x.name;
+                matches[x.name]["lat"] = x.lat;
+                matches[x.name]["lng"] = x.lng;
             }
         }
-        return "";
+
+        return crow::response(matches);
     });
 
     app.port(8080).run();
