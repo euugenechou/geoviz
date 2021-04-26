@@ -75,7 +75,7 @@ public:
     // @s: South bound.
     // @e: East bound.
     // @w: West bound.
-    std::vector<std::shared_ptr<Point>> query_range(double n, double s, double e, double w);
+    std::vector<std::shared_ptr<Point>> query(double n, double s, double e, double w);
 
     // Prints out the contents of a QuadTree.
     void print(size_t depth = 0);

@@ -73,7 +73,7 @@ bool QuadTree::insert(const std::string &sample, double lat, double lng) {
         return true;
     }
 
-    // Otherwise, subdivide and add point to some accepting node.
+    // Subdivide if we're on a leaf and don't have space.
     if (!north_west) {
         subdivide();
     }
@@ -85,11 +85,10 @@ bool QuadTree::insert(const std::string &sample, double lat, double lng) {
     if (south_east->insert(sample, lat, lng)) return true;
 
     // If all else fails.
-    p->print();
     return false;
 }
 
-std::vector<std::shared_ptr<Point>> QuadTree::query_range(double n, double s, double e, double w) {
+std::vector<std::shared_ptr<Point>> QuadTree::query(double n, double s, double e, double w) {
     // Vector to hold points within bounds.
     std::vector<std::shared_ptr<Point>> bounded;
 
@@ -115,10 +114,10 @@ std::vector<std::shared_ptr<Point>> QuadTree::query_range(double n, double s, do
 
     // If there are children, add points from them.
     if (north_west) {
-        std::vector<std::shared_ptr<Point>> nwpts = north_west->query_range(n, s, e, w);
-        std::vector<std::shared_ptr<Point>> nepts = north_east->query_range(n, s, e, w);
-        std::vector<std::shared_ptr<Point>> swpts = south_west->query_range(n, s, e, w);
-        std::vector<std::shared_ptr<Point>> septs = south_east->query_range(n, s, e, w);
+        std::vector<std::shared_ptr<Point>> nwpts = north_west->query(n, s, e, w);
+        std::vector<std::shared_ptr<Point>> nepts = north_east->query(n, s, e, w);
+        std::vector<std::shared_ptr<Point>> swpts = south_west->query(n, s, e, w);
+        std::vector<std::shared_ptr<Point>> septs = south_east->query(n, s, e, w);
 
         // Append points from children QuadTrees into the vector.
         bounded.insert(bounded.end(), nwpts.begin(), nwpts.end());
