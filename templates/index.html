@@ -4,10 +4,9 @@
     <title>Geoviz</title>
     <style type="text/css">
 #map {
-  height: 95vh;
-  width: 75%;
-  float: right;
+  display: flex;
   justify-content: center;
+  height: 98vh;
 }
     </style>
     <script
@@ -17,15 +16,15 @@
         const origin = { lat: 36.9881, lng: -122.0582 };
 
         const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 8,
+          zoom: 10,
           center: origin,
+          streetViewControl: false,
         });
 
         var markers = {};
 
         map.addListener("bounds_changed", () => {
           var data = map.getBounds().toJSON();
-          console.log(data);
           $.ajax({
             url: '/data',
             dataType: 'json',
@@ -41,20 +40,18 @@
                 var latlng = new google.maps.LatLng({lat: lat, lng: lng});
 
                 if (!(sample in markers)) {
-                  var marker = new google.maps.Marker({
+                  markers[sample] = new google.maps.Marker({
                     position: latlng,
                     map: map,
                     animation: google.maps.Animation.DROP,
                   });
-                  markers[sample] = marker;
                 }
               }
 
               // Delete any markers that aren't visible anymore.
               for (var sample in markers) {
-                var marker = markers[sample];
-                if (!(map.getBounds().contains(marker.getPosition()))) {
-                  marker.setMap(null);
+                if (!(map.getBounds().contains(markers[sample].getPosition()))) {
+                  markers[sample].setMap(null);
                   delete markers[sample];
                 }
               }
@@ -65,10 +62,12 @@
     </script>
   </head>
   <body>
-    <div id="map"></div>
+    <div>
+      <div id="map"></div>
+    </div>
     <script
       src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly"
       async
-      ></script>
+    ></script>
   </body>
 </html>

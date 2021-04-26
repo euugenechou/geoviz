@@ -35,14 +35,15 @@ typedef struct AABB {
 // Point QuadTree class.
 class QuadTree {
 private:
+    // Constant static capacity for all QuadTrees.
+    // TODO: Make dynamic?
+    static const size_t capacity = 1024;
+
     // Boundary of a QuadTree.
     AABB boundary;
 
-    // Points in a quadtree node. Maximum of 8, tracked the by the size.
-    // Each point is a shared_ptr since the point may be moved around.
-    // TODO: make size dynamic?
-    int size;
-    std::shared_ptr<Point> points[QUADTREE_CAPACITY];
+    // Vector of points in a QuadTree node.
+    std::vector<std::shared_ptr<Point>> points;
 
     // Children. All are unique_ptr since these children belong solely to the parent.
     std::unique_ptr<QuadTree> north_west;
@@ -66,7 +67,7 @@ public:
     // @sample: Sample name.
     // @lat: Sample's latitude.
     // @lng: Sample's longitude.
-    bool insert(std::string sample, double lat, double lng);
+    bool insert(const std::string &sample, double lat, double lng);
 
     // Queries the given range for a vector of Points in the queried range.
     // Each Point in the vector is a shared_ptr since they are moved around.
@@ -77,7 +78,7 @@ public:
     std::vector<std::shared_ptr<Point>> query_range(double n, double s, double e, double w);
 
     // Prints out the contents of a QuadTree.
-    void print(int depth = 0);
+    void print(size_t depth = 0);
 };
 
 #endif

@@ -23,9 +23,6 @@ bool AABB::intersects_aabb(AABB y) {
 }
 
 QuadTree::QuadTree(double n, double s, double e, double w) {
-    // QuadTree initially has no points.
-    size = 0;
-
     // Set up the boundary AABB.
     boundary = {
         .north = n,
@@ -33,11 +30,6 @@ QuadTree::QuadTree(double n, double s, double e, double w) {
         .east  = e,
         .west  = w,
     };
-
-    // Null out each of the contained node pointers.
-    for (int i = 0; i < QUADTREE_CAPACITY; i += 1) {
-        points[i] = nullptr;
-    }
 
     // Null out the children.
     north_west = nullptr;
@@ -49,7 +41,7 @@ QuadTree::QuadTree(double n, double s, double e, double w) {
 void QuadTree::subdivide(void) {
     // Just to shorten the actual arguments later.
     double north     = boundary.north;
-    double south     = boundary.north;
+    double south     = boundary.south;
     double west      = boundary.west;
     double east      = boundary.east;
     double halfnorth = (boundary.north + boundary.south) / 2;
@@ -62,7 +54,7 @@ void QuadTree::subdivide(void) {
     south_east = std::make_unique<QuadTree>(halfnorth, south, east, halfeast);
 }
 
-bool QuadTree::insert(std::string sample, double lat, double lng) {
+bool QuadTree::insert(const std::string &sample, double lat, double lng) {
     // Create the point from the specified lat/lng and name.
     std::shared_ptr<Point> p = std::make_shared<Point>(Point {
         .sample = sample,
@@ -76,8 +68,8 @@ bool QuadTree::insert(std::string sample, double lat, double lng) {
     }
 
     // Add point here if there is space and there aren't subdivisions.
-    if (size < QUADTREE_CAPACITY && !north_west) {
-        points[size++] = p;
+    if (points.size() < capacity && !north_west) {
+        points.push_back(p);
         return true;
     }
 
@@ -93,6 +85,7 @@ bool QuadTree::insert(std::string sample, double lat, double lng) {
     if (south_east->insert(sample, lat, lng)) return true;
 
     // If all else fails.
+    p->print();
     return false;
 }
 
@@ -114,7 +107,7 @@ std::vector<std::shared_ptr<Point>> QuadTree::query_range(double n, double s, do
     }
 
     // Check points in current quadtree.
-    for (int i = 0; i < size; i += 1) {
+    for (size_t i = 0; i < points.size(); i += 1) {
         if (range.contains_point(points[i])) {
             bounded.push_back(points[i]);
         }
@@ -137,9 +130,9 @@ std::vector<std::shared_ptr<Point>> QuadTree::query_range(double n, double s, do
     return bounded;
 }
 
-void QuadTree::print(int depth) {
-    for (int i = 0; i < size; i += 1) {
-        for (int j = 0; j < depth; j += 1) {
+void QuadTree::print(size_t depth) {
+    for (size_t i = 0; i < points.size(); i += 1) {
+        for (size_t j = 0; j < depth; j += 1) {
             std::cout << "|  ";
         }
         points[i]->print();

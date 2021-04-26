@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -6,6 +7,7 @@
 #include <string>
 #include "common.hpp"
 #include "crow_all.hpp"
+#include "quadtree.hpp"
 
 #define OPTIONS "hc:i:"
 #define BLOCK   4096
@@ -26,34 +28,14 @@ void usage(char *exec) {
               << std::endl;
 }
 
-typedef struct Sample {
-    std::string name;
-    double lat;
-    double lng;
-} Sample;
-
-static void load_samples(Sample samples[], std::ifstream &llfile) {
+static void load_samples(QuadTree &qt, const std::unique_ptr<std::istream> &llfile) {
     std::string line;
     std::vector<std::string> fields;
 
-    for (int i = 0; i < 20; i += 1) {
-        std::getline(llfile, line);
+    while (std::getline(*llfile, line)) {
         boost::split(fields, line, boost::is_any_of(" "));
-        Sample s = {
-            .name = fields[0],
-            .lat  = std::stod(fields[1]),
-            .lng  = std::stod(fields[2]),
-        };
-        samples[i] = s;
+        qt.insert(fields[0], std::stod(fields[1]), std::stod(fields[2]));
     }
-}
-
-static bool inbounds(const crow::json::rvalue &bounds, double lat, double lng) {
-    double north = bounds["north"].d();
-    double south = bounds["south"].d();
-    double east  = bounds["east"].d();
-    double west  = bounds["west"].d();
-    return south < lat && lat < north && west < lng && lng < east;
 }
 
 int main(int argc, char **argv) {
@@ -85,20 +67,15 @@ int main(int argc, char **argv) {
     //     return EXIT_FAILURE;
     // }
 
-    if (!llfname.length()) {
-        std::cerr << "Error: must specify file of sample lat/longs." << std::endl;
-        usage(argv[0]);
-        return EXIT_FAILURE;
+    std::unique_ptr<std::istream> llfile;
+    if (llfname.length() > 0) {
+        llfile.reset(new std::ifstream(llfname));
+    } else {
+        llfile.reset(&std::cin);
     }
 
-    std::ifstream llfile(llfname);
-    if (llfile.fail()) {
-        std::cerr << "Error: failed to open latitude/longitude file." << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    Sample samples[20];
-    load_samples(samples, llfile);
+    QuadTree qt(85.0, -85.0, 180.0, -180.0);
+    load_samples(qt, llfile);
 
     crow::SimpleApp app;
     app.loglevel(crow::LogLevel::Info);
@@ -116,18 +93,20 @@ int main(int argc, char **argv) {
         crow::json::rvalue bounds = crow::json::load(req.body);
         CROW_LOG_INFO << bounds;
 
-        crow::json::wvalue matches;
-        for (auto &x : samples) {
-            if (inbounds(bounds, x.lat, x.lng)) {
-                matches[x.name]["lat"] = x.lat;
-                matches[x.name]["lng"] = x.lng;
-            }
+        crow::json::wvalue res;
+        double n = bounds["north"].d();
+        double s = bounds["south"].d();
+        double e = bounds["east"].d();
+        double w = bounds["west"].d();
+
+        for (auto &match : qt.query_range(n, s, e, w)) {
+            res[match->sample]["lat"] = match->lat;
+            res[match->sample]["lng"] = match->lng;
         }
 
-        return crow::response(matches);
+        return crow::response(res);
     });
 
     app.port(8080).run();
-    llfile.close();
     return EXIT_SUCCESS;
 }

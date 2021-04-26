@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CXX_FLAGS "-std=c++17 -Ofast -Wall -Werror -Wshadow -Wpedantic")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Werror -Wshadow -Wpedantic")
 
 if(EXISTS "/usr/local/lib")
   set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib -ltbb")
