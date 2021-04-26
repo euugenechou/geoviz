@@ -25,6 +25,8 @@ choice.
 
 ### TODO
 - [ ] Maybe refactor extract main()
-- [ ] Set up quadtrees ~~or set up sorted coordinate files~~
+- [x] Set up quadtrees ~~or set up sorted coordinate files~~
 - [x] Python Google maps vs. straight Javascript
 - [ ] Portability and distribution
+- [ ] Dynamic resizing of quadtree buckets (there is some math to this)
+- [ ] Removal from quadtree buckets (is this needed?)
