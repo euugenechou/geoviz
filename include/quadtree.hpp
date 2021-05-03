@@ -30,8 +30,6 @@ typedef struct AABB {
     bool intersects_aabb(AABB x);
 } AABB;
 
-#define QUADTREE_CAPACITY 4
-
 // Point QuadTree class.
 class QuadTree {
 private:

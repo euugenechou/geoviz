@@ -3,14 +3,22 @@
   <head>
     <title>Geoviz</title>
     <style type="text/css">
+#tree {
+  float: left;
+  height: 50vh;
+}
+    </style>
+    <style type="text/css">
 #map {
-  display: flex;
-  justify-content: center;
   height: 98vh;
 }
     </style>
+    <link rel="stylesheet" href="http://tntvis.github.io/tnt.tree/build/tnt.tree.css" type="text/css"/>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://tntvis.github.io/tnt.tree/build/tnt.tree.min.js" charset="utf-8"></script>
     <script
-      src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+    </script>
     <script>
       initMap = function() {
         const origin = { lat: 36.9881, lng: -122.0582 };
@@ -22,6 +30,29 @@
         });
 
         var markers = {};
+
+        var tree_vis = tnt.tree()
+              .layout (tnt.tree.layout.vertical()
+                  .width(350)
+                  .scale(false)
+              )
+              .node_display (tnt.tree.node_display.circle()
+                  .size(5)
+                  .fill(function (node) {
+                      if (node.is_leaf()) {
+                          return "blue";
+                      }
+                      return "green";
+                  })
+              )
+              .label (tnt.tree.label.text()
+                  .height(30)
+                  .text (function (node) {
+                      return node.property("name");
+                  })
+              );
+
+        var rendered = false;
 
         map.addListener("bounds_changed", () => {
           var data = map.getBounds().toJSON();
@@ -55,19 +86,35 @@
                   delete markers[sample];
                 }
               }
+
+              // Update the Newick tree.
+              tree_vis.data(tnt.tree.parse_newick(res["newick"]));
+
+              // We render the tree once. Each response after that is an update.
+              if (!(rendered)) {
+                tree_vis(document.getElementById("tree"));
+                rendered = true;
+              } else {
+                tree_vis.update();
+              }
             }
           })
         });
       };
+
+
     </script>
   </head>
   <body>
     <div>
+      <div id="tree"></div>
       <div id="map"></div>
-    </div>
+    <div>
     <script
       src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly"
       async
     ></script>
+    <script>
+          </script>
   </body>
 </html>

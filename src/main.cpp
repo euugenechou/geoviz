@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
@@ -7,10 +8,11 @@
 #include <string>
 #include "common.hpp"
 #include "crow_all.hpp"
+#include "filter.hpp"
 #include "quadtree.hpp"
+#include "summary.hpp"
 
-#define OPTIONS "hc:i:"
-#define BLOCK   4096
+#define OPTIONS "hc:i:o:s:"
 
 Timer timer;
 
@@ -25,23 +27,35 @@ void usage(char *exec) {
                  "   -h             Print program usage and help.\n"
                  "   -c llfile      File of lat/longs for samples."
                  "   -i infile      Input MAT protobuf file."
+                 "   -o outfile     Output of samples in input protobuf."
+                 "   -s sfile       File of samples."
               << std::endl;
 }
 
-static void load_samples(QuadTree &qt, const std::unique_ptr<std::istream> &llfile) {
+static void load_samples(QuadTree &qt, std::ifstream &llfile) {
     std::string line;
     std::vector<std::string> fields;
 
-    while (std::getline(*llfile, line)) {
+    while (std::getline(llfile, line)) {
         boost::split(fields, line, boost::is_any_of(" "));
-        qt.insert(fields[0], std::stod(fields[1]), std::stod(fields[2]));
+        assert(qt.insert(fields[0], std::stod(fields[1]), std::stod(fields[2])));
     }
+}
+
+static std::vector<std::string> load_sample_names(std::ifstream &sfile) {
+    std::string line;
+    std::vector<std::string> samples;
+
+    while (std::getline(sfile, line)) {
+        samples.push_back(line);
+    }
+
+    return samples;
 }
 
 int main(int argc, char **argv) {
     int opt = 0;
-    std::string infname;
-    std::string llfname;
+    std::string infname, outfname, llfname, sfname;
 
     while ((opt = getopt(argc, argv, OPTIONS)) != -1) {
         switch (opt) {
@@ -50,6 +64,12 @@ int main(int argc, char **argv) {
             break;
         case 'i':
             infname = optarg;
+            break;
+        case 'o':
+            outfname = optarg;
+            break;
+        case 's':
+            sfname = optarg;
             break;
         case 'h':
             usage(argv[0]);
@@ -60,23 +80,38 @@ int main(int argc, char **argv) {
         }
     }
 
-    // TODO: Read in protobuf, build, tree, extract samples from it.
-    // if (!infile.length()) {
-    //     std::cerr << "Error: must specify input protobuf to load." << std::endl;
-    //     usage(argv[0]);
-    //     return EXIT_FAILURE;
-    // }
-
-    std::unique_ptr<std::istream> llfile;
-    if (llfname.length() > 0) {
-        llfile.reset(new std::ifstream(llfname));
-    } else {
-        llfile.reset(&std::cin);
+    // Open sample file.
+    std::ifstream sfile(sfname);
+    if (!sfile) {
+        std::cerr << "Error: failed to open " << sfname << std::endl;
+        return EXIT_FAILURE;
+    }
+    std::vector<std::string> samples = load_sample_names(sfile);
+    for (auto &s : samples) {
+        std::cout << s << std::endl;
     }
 
+    // Load MAT from input file.
+    MAT::Tree tree = MAT::load_mutation_annotated_tree(infname);
+    if (!tree.root) {
+        return EXIT_FAILURE;
+    }
+
+    MAT::Tree subtree = get_sample_subtree(tree, samples);
+    std::cout << get_newick_string(subtree, true, false, false, false) << std::endl;
+
+    // Open lat/lng file.
+    std::ifstream llfile(llfname);
+    if (!llfile) {
+        std::cerr << "Error: failed to open " << llfname << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    // Init worldwide QuadTree then load it with samples in lat/lng file.
     QuadTree qt(85.0, -85.0, 180.0, -180.0);
     load_samples(qt, llfile);
 
+    // Start micro-webserver.
     crow::SimpleApp app;
     app.loglevel(crow::LogLevel::Info);
 
@@ -99,10 +134,12 @@ int main(int argc, char **argv) {
         double e = bounds["east"].d();
         double w = bounds["west"].d();
 
-        for (auto &match : qt.query_range(n, s, e, w)) {
+        for (auto &match : qt.query(n, s, e, w)) {
             res[match->sample]["lat"] = match->lat;
             res[match->sample]["lng"] = match->lng;
         }
+
+        res["newick"] = "(" + std::to_string(rand() % 100) + ")";
 
         return crow::response(res);
     });
