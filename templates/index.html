@@ -21,10 +21,10 @@
     </script>
     <script>
       initMap = function() {
-        const origin = { lat: 36.9881, lng: -122.0582 };
+        const origin = { lat: 39.8283, lng: -98.5795 };
 
         const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 10,
+          zoom: 5,
           center: origin,
           streetViewControl: false,
         });
@@ -33,7 +33,7 @@
 
         var tree_vis = tnt.tree()
               .layout (tnt.tree.layout.vertical()
-                  .width(350)
+                  .width(650)
                   .scale(false)
               )
               .node_display (tnt.tree.node_display.circle()

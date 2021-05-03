@@ -12,7 +12,7 @@
 #include "quadtree.hpp"
 #include "summary.hpp"
 
-#define OPTIONS "hc:i:o:s:"
+#define OPTIONS "hc:i:o:"
 
 Timer timer;
 
@@ -42,17 +42,6 @@ static void load_samples(QuadTree &qt, std::ifstream &llfile) {
     }
 }
 
-static std::vector<std::string> load_sample_names(std::ifstream &sfile) {
-    std::string line;
-    std::vector<std::string> samples;
-
-    while (std::getline(sfile, line)) {
-        samples.push_back(line);
-    }
-
-    return samples;
-}
-
 int main(int argc, char **argv) {
     int opt = 0;
     std::string infname, outfname, llfname, sfname;
@@ -68,9 +57,6 @@ int main(int argc, char **argv) {
         case 'o':
             outfname = optarg;
             break;
-        case 's':
-            sfname = optarg;
-            break;
         case 'h':
             usage(argv[0]);
             return EXIT_SUCCESS;
@@ -80,25 +66,11 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Open sample file.
-    std::ifstream sfile(sfname);
-    if (!sfile) {
-        std::cerr << "Error: failed to open " << sfname << std::endl;
-        return EXIT_FAILURE;
-    }
-    std::vector<std::string> samples = load_sample_names(sfile);
-    for (auto &s : samples) {
-        std::cout << s << std::endl;
-    }
-
     // Load MAT from input file.
     MAT::Tree tree = MAT::load_mutation_annotated_tree(infname);
     if (!tree.root) {
         return EXIT_FAILURE;
     }
-
-    MAT::Tree subtree = get_sample_subtree(tree, samples);
-    std::cout << get_newick_string(subtree, true, false, false, false) << std::endl;
 
     // Open lat/lng file.
     std::ifstream llfile(llfname);
@@ -134,12 +106,21 @@ int main(int argc, char **argv) {
         double e = bounds["east"].d();
         double w = bounds["west"].d();
 
+        std::vector<std::string> samples;
+
         for (auto &match : qt.query(n, s, e, w)) {
+            samples.push_back(match->sample);
             res[match->sample]["lat"] = match->lat;
             res[match->sample]["lng"] = match->lng;
         }
 
-        res["newick"] = "(" + std::to_string(rand() % 100) + ")";
+        MAT::Tree subtree = get_sample_subtree(tree, samples);
+
+        if (subtree.root) {
+            res["newick"] = get_newick_string(subtree, false, false, false, false);
+        } else {
+            res["newick"] = "";
+        }
 
         return crow::response(res);
     });
