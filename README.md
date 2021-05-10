@@ -30,3 +30,5 @@ choice.
 - [ ] Portability and distribution
 - [ ] Dynamic resizing of quadtree buckets (there is some math to this)
 - [ ] Removal from quadtree buckets (is this needed?)
+- [x] Toggling of phylogeny tree
+- [ ] Requery quadtree when phylogeny tree is toggled (genetic zoom)
