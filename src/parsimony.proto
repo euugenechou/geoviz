@@ -1,4 +1,5 @@
-syntax = "proto3";                                                                                                                                                                                              
+syntax = "proto3";
+
 package Parsimony;
 
 message mut {
@@ -25,6 +26,6 @@ message node_metadata {
 message data {
     string newick = 1;
     repeated mutation_list node_mutations = 2;
-    repeated condensed_node condensed_nodes = 3; 
-    repeated node_metadata metadata = 4; 
+    repeated condensed_node condensed_nodes = 3;
+    repeated node_metadata metadata = 4;
 }

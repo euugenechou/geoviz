@@ -494,6 +494,78 @@ Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::create_tree_from_newick(s
     return create_tree_from_newick_string(newick_string);
 }
 
+Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::from_input(std::istream &infile) {
+    Tree tree;
+    Parsimony::data data;
+    data.ParseFromIstream(&infile);
+
+    bool hasmeta = (data.metadata_size() > 0);
+    tree         = create_tree_from_newick_string(data.newick());
+    auto dfs     = tree.depth_first_expansion();
+    static tbb::affinity_partitioner ap;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, dfs.size()),
+        [&](tbb::blocked_range<size_t> r) {
+            for (size_t idx = r.begin(); idx < r.end(); idx++) {
+                auto node          = dfs[idx];
+                auto mutation_list = data.node_mutations(idx);
+                if (hasmeta) {
+                    for (int k = 0; k < data.metadata(idx).clade_annotations_size(); k++) {
+                        node->clade_annotations.emplace_back(data.metadata(idx).clade_annotations(k));
+                    }
+                }
+                for (int k = 0; k < mutation_list.mutation_size(); k++) {
+                    auto mut = mutation_list.mutation(k);
+                    Mutation m;
+                    m.chrom    = mut.chromosome();
+                    m.position = mut.position();
+                    if (!m.is_masked()) {
+                        m.ref_nuc    = (1 << mut.ref_nuc());
+                        m.par_nuc    = (1 << mut.par_nuc());
+                        m.is_missing = false;
+                        std::vector<int8_t> nuc_vec(mut.mut_nuc_size());
+                        for (int n = 0; n < mut.mut_nuc_size(); n++) {
+                            nuc_vec[n] = mut.mut_nuc(n);
+                        }
+                        m.mut_nuc = get_nuc_id(nuc_vec);
+                        if (m.mut_nuc != m.par_nuc) {
+                            node->add_mutation(m);
+                        }
+                    } else {
+                        // Mutation masked
+                        m.ref_nuc = 0;
+                        m.par_nuc = 0;
+                        m.mut_nuc = 0;
+                        node->add_mutation(m);
+                    }
+                }
+                if (!std::is_sorted(node->mutations.begin(), node->mutations.end())) {
+                    fprintf(stderr, "WARNING: Mutations not sorted!\n");
+                    std::sort(node->mutations.begin(), node->mutations.end());
+                }
+            }
+        },
+        ap);
+
+    size_t num_condensed_nodes = static_cast<size_t>(data.condensed_nodes_size());
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, num_condensed_nodes),
+        [&](tbb::blocked_range<size_t> r) {
+            for (size_t idx = r.begin(); idx < r.end(); idx++) {
+                auto cn = data.condensed_nodes(idx);
+                tree.condensed_nodes.emplace(std::pair<std::string, std::vector<std::string>>(
+                    cn.node_name(), std::vector<std::string>(cn.condensed_leaves_size())));
+                for (int k = 0; k < cn.condensed_leaves_size(); k++) {
+                    tree.condensed_nodes[cn.node_name()][k] = cn.condensed_leaves(k);
+                    tree.condensed_leaves.emplace(cn.condensed_leaves(k));
+                }
+            }
+        },
+        ap);
+
+    return tree;
+}
+
 Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::load_mutation_annotated_tree(std::string filename) {
     TIMEIT();
     Tree tree;

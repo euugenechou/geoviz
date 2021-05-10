@@ -1,11 +1,11 @@
 #include <cassert>
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <string>
 #include <unistd.h>
 #include <vector>
-#include <string>
 #include "common.hpp"
 #include "crow_all.hpp"
 #include "filter.hpp"
@@ -16,7 +16,7 @@
 
 Timer timer;
 
-void usage(char *exec) {
+static void usage(char *exec) {
     std::cout << "SYNOPSIS\n"
                  "   Geo-genetic visualizer for UShER.\n"
                  "\n"
@@ -25,9 +25,9 @@ void usage(char *exec) {
     std::cout << "\n"
                  "OPTIONS\n"
                  "   -h             Print program usage and help.\n"
-                 "   -c llfile      File of lat/longs for samples."
-                 "   -i infile      Input MAT protobuf file."
-                 "   -o outfile     Output of samples in input protobuf."
+                 "   -c llfile      File of lat/longs for samples.\n"
+                 "   -i infile      Input MAT protobuf file.\n"
+                 "   -o outfile     Output of samples in input protobuf.\n"
                  "   -s sfile       File of samples."
               << std::endl;
 }

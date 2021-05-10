@@ -20,7 +20,7 @@
       src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
     </script>
     <script>
-      initMap = function() {
+      init = function() {
         const origin = { lat: 39.8283, lng: -98.5795 };
 
         const map = new google.maps.Map(document.getElementById("map"), {
@@ -32,28 +32,52 @@
         var markers = {};
 
         var tree_vis = tnt.tree()
-              .layout (tnt.tree.layout.vertical()
-                  .width(650)
-                  .scale(false)
-              )
-              .node_display (tnt.tree.node_display.circle()
-                  .size(5)
-                  .fill(function (node) {
-                      if (node.is_leaf()) {
-                          return "blue";
-                      }
-                      return "green";
-                  })
-              )
-              .label (tnt.tree.label.text()
-                  .height(30)
-                  .text (function (node) {
-                      return node.property("name");
-                  })
-              );
+          .layout (tnt.tree.layout.vertical()
+            .width(650)
+            .scale(false)
+          )
+          .node_display (tnt.tree.node_display.circle()
+            .size(5)
+            .fill(function (node) {
+              if (node.is_leaf()) {
+                return "blue";
+              }
+              return "green";
+            })
+          )
+          .label (tnt.tree.label.text()
+            .height(30)
+            .text (function (node) {
+              return node.property("name");
+            })
+          );
 
+        // Genetic zoom when tree node is toggled.
+        tree_vis.on("click", function (node) {
+          node.toggle();
+          tree_vis.update();
+
+          // Grab samples still listed by the tree.
+          var root = tree_vis.root();
+          var leaves = root.find_all(function (node) {
+            return node.is_collapsed();
+          });
+
+
+          for (var i = 0; i < leaves.length; i++) {
+            sample = leaves[i].data();
+            console.log(sample["name"]);
+          }
+
+          // Send samples back.
+
+          // Wait for response that dictates the minimum bounds of tree.
+        });
+
+        // To make sure TNT tree is rendered once.
         var rendered = false;
 
+        // TODO: refactor later, handles getting new samples on bounds change.
         map.addListener("bounds_changed", () => {
           var data = map.getBounds().toJSON();
           $.ajax({
@@ -71,7 +95,7 @@
                 var latlng = new google.maps.LatLng({lat: lat, lng: lng});
 
                 if (!(sample in markers)) {
-                  markers[sample] = new google.maps.Marker({
+                  markers[String(sample)] = new google.maps.Marker({
                     position: latlng,
                     map: map,
                     animation: google.maps.Animation.DROP,
@@ -82,8 +106,8 @@
               // Delete any markers that aren't visible anymore.
               for (var sample in markers) {
                 if (!(map.getBounds().contains(markers[sample].getPosition()))) {
-                  markers[sample].setMap(null);
-                  delete markers[sample];
+                  markers[String(sample)].setMap(null);
+                  delete markers[String(sample)];
                 }
               }
 
@@ -91,18 +115,16 @@
               tree_vis.data(tnt.tree.parse_newick(res["newick"]));
 
               // We render the tree once. Each response after that is an update.
-              if (!(rendered)) {
+              if (rendered) {
+                tree_vis.update();
+              } else {
                 tree_vis(document.getElementById("tree"));
                 rendered = true;
-              } else {
-                tree_vis.update();
               }
             }
           })
         });
       };
-
-
     </script>
   </head>
   <body>
@@ -111,10 +133,8 @@
       <div id="map"></div>
     <div>
     <script
-      src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly"
+      src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=init&libraries=&v=weekly"
       async
     ></script>
-    <script>
-          </script>
   </body>
 </html>
