@@ -32,3 +32,4 @@ choice.
 - [ ] Removal from quadtree buckets (is this needed?)
 - [x] Toggling of phylogeny tree
 - [ ] Requery quadtree when phylogeny tree is toggled (genetic zoom)
+- [ ] Construct stack of phylogeny trees for genetic zoom (zoom level based on tree stack)
