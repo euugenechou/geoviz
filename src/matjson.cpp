@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <memory.h>
 #include "common.hpp"
 #include "filter.hpp"
 #include "summary.hpp"
@@ -12,7 +13,7 @@ Timer timer;
 
 static void usage(char *exec) {
     std::cout << "SYNOPSIS\n"
-                 "   Sample dumper for UShER protobufs.\n"
+                 "   Reads in MATs, dumps JSON.\n"
                  "\n"
                  "USAGE\n";
     std::cout << "   " << exec << " [-h] [-i infile] [-o outfile]\n";
@@ -20,7 +21,7 @@ static void usage(char *exec) {
                  "OPTIONS\n"
                  "   -h             Print program usage and help.\n"
                  "   -i infile      Input MAT protobuf file. (default: stdin)\n"
-                 "   -o outfile     Output for samples. (default: stdout)"
+                 "   -o outfile     Output for JSON tree. (default: stdout)"
               << std::endl;
 }
 
@@ -59,8 +60,7 @@ int main(int argc, char **argv) {
 
     // Load MAT from infile, write to outfile.
     MAT::Tree tree = MAT::from_input(*infile);
-    std::cerr << get_newick_string(tree, false, false, false, false) << std::endl;
-    dump_samples(tree, *outfile);
+    mat_print(*outfile, tree.root);
 
     return EXIT_SUCCESS;
 }

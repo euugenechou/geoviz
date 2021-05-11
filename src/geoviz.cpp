@@ -16,7 +16,10 @@
 
 Timer timer;
 
-static void usage(char *exec) {
+///
+/// @brief This is something.
+///
+void usage(char *exec) {
     std::cout << "SYNOPSIS\n"
                  "   Geo-genetic visualizer for UShER.\n"
                  "\n"
@@ -32,7 +35,7 @@ static void usage(char *exec) {
               << std::endl;
 }
 
-static void load_samples(QuadTree &qt, std::ifstream &llfile) {
+void load_samples(QuadTree &qt, std::ifstream &llfile) {
     std::string line;
     std::vector<std::string> fields;
 
@@ -42,6 +45,9 @@ static void load_samples(QuadTree &qt, std::ifstream &llfile) {
     }
 }
 
+///
+/// @brief Something something comment for Doxygen
+///
 int main(int argc, char **argv) {
     int opt = 0;
     std::string infname, outfname, llfname, sfname;

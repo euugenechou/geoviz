@@ -17,6 +17,7 @@ endif()
 find_package(Boost COMPONENTS program_options iostreams filesystem REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(TBB REQUIRED)
+find_package(Doxygen REQUIRED)
 
 message(STATUS "Using Boost ${Boost_VERSION}")
 message(STATUS "Using Protocol Buffers ${Protobuf_VERSION}")
@@ -33,20 +34,13 @@ file(GLOB HDR "include/*.{h,hpp}")
 list(REMOVE_ITEM SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/src/geoviz.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/sampler.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/matjson.cpp"
 )
 
 message(STATUS "sources: ${SRC}")
 
 add_executable(geoviz
   "src/geoviz.cpp"
-  ${SRC}
-  ${PROTO_SRC}
-  ${HDR}
-  ${PROTO_HDR}
-)
-
-add_executable(sampler
-  "src/sampler.cpp"
   ${SRC}
   ${PROTO_SRC}
   ${HDR}
@@ -68,6 +62,14 @@ target_link_libraries(geoviz
   ${TBB_LIBRARIES}
 )
 
+add_executable(sampler
+  "src/sampler.cpp"
+  ${SRC}
+  ${PROTO_SRC}
+  ${HDR}
+  ${PROTO_HDR}
+)
+
 target_include_directories(sampler
   PRIVATE
   src
@@ -78,6 +80,29 @@ target_include_directories(sampler
 )
 
 target_link_libraries(sampler
+  ${Boost_LIBRARIES}
+  ${Protobuf_LIBRARIES}
+  ${TBB_LIBRARIES}
+)
+
+add_executable(matjson
+  "src/matjson.cpp"
+  ${SRC}
+  ${PROTO_SRC}
+  ${HDR}
+  ${PROTO_HDR}
+)
+
+target_include_directories(matjson
+  PRIVATE
+  src
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${Protobuf_INCLUDE_DIRS}
+  ${TBB_INCLUDE_DIRS}
+)
+
+target_link_libraries(matjson
   ${Boost_LIBRARIES}
   ${Protobuf_LIBRARIES}
   ${TBB_LIBRARIES}

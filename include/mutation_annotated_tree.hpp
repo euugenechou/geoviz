@@ -47,16 +47,16 @@ struct Mutation {
     }
     inline Mutation copy() const {
         Mutation m;
-        m.chrom      = chrom;
-        m.position   = position;
-        m.ref_nuc    = ref_nuc;
-        m.par_nuc    = par_nuc;
-        m.mut_nuc    = mut_nuc;
+        m.chrom = chrom;
+        m.position = position;
+        m.ref_nuc = ref_nuc;
+        m.par_nuc = par_nuc;
+        m.mut_nuc = mut_nuc;
         m.is_missing = is_missing;
         return m;
     }
     Mutation() {
-        chrom      = "";
+        chrom = "";
         is_missing = false;
     }
     inline bool is_masked() const {
@@ -155,5 +155,6 @@ Node *LCA(const Tree &tree, const std::string &node_id1, const std::string &node
 Tree get_subtree(const Tree &tree, const std::vector<std::string> &samples);
 
 void clear_tree(Tree &tree);
+void mat_print(std::ostream &outfile, const Node *n = NULL, int depth = 0);
 }
 

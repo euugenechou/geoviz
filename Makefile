@@ -1,15 +1,16 @@
-samples = 50000
-
-all: compile
+all: doc compile
 
 compile:
 	@mkdir -p build && cd build && cmake .. && make -j4
 
-gui: compile
+gui: doc compile
 	build/geoviz -i protobufs/test.pb -c latlngs/demo.csv
 
-tree: compile
+tree: doc compile
 	build/geoviz -i protobufs/test.pb -o /tmp/treedump.tsv
 
+doc:
+	doxygen docs/Doxyfile
+
 clean:
-	rm -rf build
+	rm -rf build docs/html
