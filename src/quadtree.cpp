@@ -27,8 +27,8 @@ QuadTree::QuadTree(double n, double s, double e, double w) {
     boundary = {
         .north = n,
         .south = s,
-        .east  = e,
-        .west  = w,
+        .east = e,
+        .west = w,
     };
 
     // Null out the children.
@@ -40,12 +40,12 @@ QuadTree::QuadTree(double n, double s, double e, double w) {
 
 void QuadTree::subdivide(void) {
     // Just to shorten the actual arguments later.
-    double north     = boundary.north;
-    double south     = boundary.south;
-    double west      = boundary.west;
-    double east      = boundary.east;
+    double north = boundary.north;
+    double south = boundary.south;
+    double west = boundary.west;
+    double east = boundary.east;
     double halfnorth = (boundary.north + boundary.south) / 2;
-    double halfeast  = (boundary.east + boundary.west) / 2;
+    double halfeast = (boundary.east + boundary.west) / 2;
 
     // Make the QuadTrees.
     north_west = std::make_unique<QuadTree>(north, halfnorth, halfeast, west);
@@ -58,8 +58,8 @@ bool QuadTree::insert(const std::string &sample, double lat, double lng) {
     // Create the point from the specified lat/lng and name.
     std::shared_ptr<Point> p = std::make_shared<Point>(Point {
         .sample = sample,
-        .lat    = lat,
-        .lng    = lng,
+        .lat = lat,
+        .lng = lng,
     });
 
     // Don't insert points that don't belong in the QuadTree.
@@ -96,8 +96,8 @@ std::vector<std::shared_ptr<Point>> QuadTree::query(double n, double s, double e
     AABB range = {
         .north = n,
         .south = s,
-        .east  = e,
-        .west  = w,
+        .east = e,
+        .west = w,
     };
 
     // Don't bother if range doesn't intersect the QuadTree.
