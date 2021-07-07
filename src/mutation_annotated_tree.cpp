@@ -482,6 +482,12 @@ Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::create_tree_from_newick_s
     return T;
 }
 
+Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::from_newick_input(std::istream &infile) {
+    std::string newick_string;
+    std::getline(infile, newick_string);
+    return create_tree_from_newick_string(newick_string);
+}
+
 Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::create_tree_from_newick(std::string filename) {
     std::ifstream infile(filename);
     if (!infile) {

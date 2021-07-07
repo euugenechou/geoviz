@@ -1,10 +1,10 @@
-#include "common.hpp"
-#include "filter.hpp"
-#include "summary.hpp"
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include "common.hpp"
+#include "filter.hpp"
+#include "summary.hpp"
 
 #define OPTIONS "hi:o:"
 
@@ -58,7 +58,8 @@ int main(int argc, char **argv) {
     }
 
     // Load MAT from infile, write to outfile.
-    MAT::Tree tree = MAT::from_input(*infile);
+    MAT::Tree tree = MAT::from_newick_input(*infile);
+    assert(tree.root);
 
     return EXIT_SUCCESS;
 }

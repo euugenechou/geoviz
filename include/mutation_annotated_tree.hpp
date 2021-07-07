@@ -140,6 +140,7 @@ std::string get_newick_string(const Tree &T, bool b1, bool b2, bool b3 = false, 
 std::string get_newick_string(const Tree &T, Node *node, bool b1, bool b2, bool b3 = false, bool b4 = false);
 void write_newick_string(std::stringstream &ss, const Tree &T, Node *node, bool b1, bool b2, bool b3 = false,
                          bool b4 = false);
+Tree from_newick_input(std::istream &infile);
 Tree create_tree_from_newick(std::string filename);
 Tree create_tree_from_newick_string(std::string newick_string);
 void string_split(std::string const &s, char delim, std::vector<std::string> &words);

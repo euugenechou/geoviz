@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CXX_FLAGS "-std=c++2a -Wall -Werror -Wshadow -Wpedantic")
+set(CMAKE_CXX_FLAGS "-std=c++2a -Wall -Werror -Wshadow -Wpedantic -Ofast")
 
 if(EXISTS "/usr/local/lib")
   set(CMAKE_EXE_LINKER_FLAGS "-L/usr/local/lib -ltbb")
@@ -35,6 +35,7 @@ list(REMOVE_ITEM SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/src/geoviz.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/sampler.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/matjson.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/newick.cpp"
 )
 
 message(STATUS "sources: ${SRC}")
@@ -103,6 +104,29 @@ target_include_directories(matjson
 )
 
 target_link_libraries(matjson
+  ${Boost_LIBRARIES}
+  ${Protobuf_LIBRARIES}
+  ${TBB_LIBRARIES}
+)
+
+add_executable(newick
+  "src/newick.cpp"
+  ${SRC}
+  ${PROTO_SRC}
+  ${HDR}
+  ${PROTO_HDR}
+)
+
+target_include_directories(newick
+  PRIVATE
+  src
+  include
+  ${Boost_INCLUDE_DIRS}
+  ${Protobuf_INCLUDE_DIRS}
+  ${TBB_INCLUDE_DIRS}
+)
+
+target_link_libraries(newick
   ${Boost_LIBRARIES}
   ${Protobuf_LIBRARIES}
   ${TBB_LIBRARIES}
